@@ -2675,11 +2675,8 @@ $.extend( $.easing, {
             module.debug('Initializing calendar for', element);
 
             isTouch = module.get.isTouch();
-            if (settings.inline) {
-              module.setup.inline();
-            } else {
-              module.setup.popup();
-            }
+            module.setup.popup();
+            module.setup.inline();
             module.setup.input();
             module.create.calendar();
 
@@ -2701,16 +2698,18 @@ $.extend( $.easing, {
 
           setup: {
             popup: function () {
-              if ($.fn.popup === undefined) {
-                module.error(error.popup);
+              if (settings.inline) {
                 return;
               }
               if (!$activator.length) {
                 $activator = $module.children().first();
                 if (!$activator.length) {
-                  module.error(error.activator);
                   return;
                 }
+              }
+              if ($.fn.popup === undefined) {
+                module.error(error.popup);
+                return;
               }
               if (!$container.length) {
                 //prepend the popup element to the activator's parent so that it has less chance of messing with
@@ -2749,6 +2748,9 @@ $.extend( $.easing, {
               module.popup(options);
             },
             inline: function () {
+              if ($activator.length && !settings.inline) {
+                return;
+              }
               $container = $('<div/>').addClass(className.calendar).appendTo($module);
               if (!$input.length) {
                 $container.attr('tabindex', '0');
@@ -3417,7 +3419,6 @@ $.extend( $.easing, {
 
     error: {
       popup: 'UI Popup, a required component is not included in this page',
-      activator: 'No activator found for the calendar popup',
       method: 'The method you called is not defined.'
     },
 
