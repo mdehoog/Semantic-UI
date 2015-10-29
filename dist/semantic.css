@@ -26922,6 +26922,20 @@ a.ui.card:hover,
             Table
 *******************************/
 
+.ui.calendar .ui.table.year,
+.ui.calendar .ui.table.month,
+.ui.calendar .ui.table.minute {
+  min-width: 15em;
+}
+
+.ui.calendar .ui.table.day {
+  min-width: 18em;
+}
+
+.ui.calendar .ui.table.hour {
+  min-width: 20em;
+}
+
 .ui.calendar .ui.table tr th,
 .ui.calendar .ui.table tr td {
   padding: 0.5em;
@@ -26954,15 +26968,9 @@ a.ui.card:hover,
   padding-bottom: 0.3em;
 }
 
-.ui.calendar .ui.table.year tr td,
-.ui.calendar .ui.table.month tr td {
-  padding-left: 1em;
-  padding-right: 1em;
-}
-
-.ui.calendar .ui.table.hour tr td {
-  padding-left: 0.2em;
-  padding-right: 0.2em;
+.ui.calendar .ui.table tr td {
+  padding-left: 0.1em;
+  padding-right: 0.1em;
 }
 
 .ui.calendar .ui.table tr .link {
