@@ -102,7 +102,7 @@
               if (!$container.length) {
                 //prepend the popup element to the activator's parent so that it has less chance of messing with
                 //the styling (eg input action button needs to be the last child to have correct border radius)
-                $container = $('<div/>').addClass(className.popup).appendTo($activator.parent());
+                $container = $('<div/>').addClass(className.popup).prependTo($activator.parent());
               }
               $container.addClass(className.calendar);
               var onVisible = settings.onVisible;
@@ -876,8 +876,6 @@
 
         var words = text.split(/[^A-Za-z\u00C0-\u024F]+/g);
         var numbers = text.split(/[^\d:]+/g);
-
-        console.log(words);
 
         if (!isDateOnly) {
           //am/pm
