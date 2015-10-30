@@ -2678,6 +2678,7 @@ $.extend( $.easing, {
             module.setup.popup();
             module.setup.inline();
             module.setup.input();
+            module.setup.date();
             module.create.calendar();
 
             module.bind.events();
@@ -2760,6 +2761,13 @@ $.extend( $.easing, {
             input: function () {
               if (settings.touchReadonly && $input.length && isTouch) {
                 $input.prop('readonly', true);
+              }
+            },
+            date: function () {
+              if ($input.length) {
+                var val = $input.val();
+                var date = parser.date(val, settings);
+                module.set.date(date, settings.formatInput, false);
               }
             }
           },
@@ -3000,9 +3008,11 @@ $.extend( $.easing, {
               $container.addClass(className.active);
             },
             inputBlur: function () {
-              var date = module.get.date();
-              var text = formatter.datetime(date, settings);
-              $input.val(text);
+              if (settings.formatInput) {
+                var date = module.get.date();
+                var text = formatter.datetime(date, settings);
+                $input.val(text);
+              }
               $container.removeClass(className.active);
             }
           },
@@ -3076,13 +3086,14 @@ $.extend( $.easing, {
                 }
               }
             },
-            date: function (date, updateInput) {
+            date: function (date, updateInput, fireChange) {
               updateInput = updateInput !== false;
+              fireChange = fireChange !== false;
               date = module.helper.sanitiseDate(date);
               date = module.helper.dateInRange(date);
 
               var text = formatter.datetime(date, settings);
-              if (settings.onChange.call(element, date, text) === false) {
+              if (fireChange && settings.onChange.call(element, date, text) === false) {
                 return false;
               }
 
@@ -3395,6 +3406,7 @@ $.extend( $.easing, {
     disableYear: false,   // disable year selection mode
     disableMonth: false,  // disable month selection mode
     disableMinute: false, // disable minute selection mode
+    formatInput: true,    // format the input text upon input blur and module creation
 
     // popup options ('popup', 'on', 'hoverable', and show/hide callbacks are overridden)
     popupOptions: {
