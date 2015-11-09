@@ -2666,6 +2666,8 @@ $.extend( $.easing, {
           instance = $module.data(moduleNamespace),
 
           isTouch,
+          isTouchDown = false,
+          focusDateUsedForRange = false,
           module
           ;
 
@@ -2738,10 +2740,11 @@ $.extend( $.easing, {
                 module.set.mode(settings.startMode);
                 return settings.onShow.apply($container, arguments);
               };
+              var on = settings.on || ($input.length ? 'focus' : 'click');
               var options = $.extend({}, settings.popupOptions, {
                 popup: $container,
-                on: settings.on,
-                hoverable: settings.on === 'hover',
+                on: on,
+                hoverable: on === 'hover',
                 onShow: onShow,
                 onVisible: onVisible,
                 onHide: settings.onHide,
@@ -2785,7 +2788,7 @@ $.extend( $.easing, {
 
               if (!focusDate) {
                 focusDate = display;
-                module.set.focusDate(focusDate, false);
+                module.set.focusDate(focusDate, false, false);
               }
 
               var minute = display.getMinutes();
@@ -2881,7 +2884,7 @@ $.extend( $.easing, {
                   if (module.helper.dateEqual(cellDate, focusDate, mode)) {
                     //ensure that the focus date is exactly equal to the cell date
                     //so that, if selected, the correct value is set
-                    module.set.focusDate(cellDate, false);
+                    module.set.focusDate(cellDate, false, false);
                   }
                 }
               }
@@ -2901,14 +2904,14 @@ $.extend( $.easing, {
           },
 
           update: {
-            focus: function (useFocusDateForRange, container) {
+            focus: function (updateRange, container) {
               container = container || $container;
               var mode = module.get.mode();
               var date = module.get.date();
               var focusDate = module.get.focusDate();
               var startDate = module.get.startDate();
               var endDate = module.get.endDate();
-              var rangeDate = (useFocusDateForRange ? focusDate : null) || date || (!isTouch ? focusDate : null);
+              var rangeDate = (updateRange ? focusDate : null) || date || (!isTouch ? focusDate : null);
 
               container.find('td').each(function () {
                 var cell = $(this);
@@ -2922,7 +2925,7 @@ $.extend( $.easing, {
                 var inRange = !rangeDate ? false :
                   ((!!startDate && module.helper.isDateInRange(cellDate, mode, startDate, rangeDate)) ||
                   (!!endDate && module.helper.isDateInRange(cellDate, mode, rangeDate, endDate)));
-                cell.toggleClass(className.focusCell, focused && !isTouch);
+                cell.toggleClass(className.focusCell, focused && (!isTouch || isTouchDown));
                 cell.toggleClass(className.rangeCell, inRange && !active && !disabled);
               });
             }
@@ -2934,10 +2937,10 @@ $.extend( $.easing, {
 
           bind: {
             events: function () {
-              $container.on('click' + eventNamespace, module.event.click);
-              $container.on('touchend' + eventNamespace, module.event.click);
               $container.on('mousedown' + eventNamespace, module.event.mousedown);
               $container.on('touchstart' + eventNamespace, module.event.mousedown);
+              $container.on('mouseup' + eventNamespace, module.event.mouseup);
+              $container.on('touchend' + eventNamespace, module.event.mouseup);
               $container.on('mouseover' + eventNamespace, module.event.mouseover);
               if ($input.length) {
                 $input.on('input' + eventNamespace, module.event.inputChange);
@@ -2960,11 +2963,32 @@ $.extend( $.easing, {
           },
 
           event: {
-            click: function (event) {
+            mouseover: function (event) {
+              var target = $(event.target);
+              var date = target.data(metadata.date);
+              var mousedown = event.buttons === 1;
+              if (date) {
+                module.set.focusDate(date, false, true, mousedown);
+              }
+            },
+            mousedown: function (event) {
+              if ($input.length) {
+                //prevent the mousedown on the calendar causing the input to lose focus
+                event.preventDefault();
+              }
+              isTouchDown = event.type.indexOf('touch') >= 0;
+              var target = $(event.target);
+              var date = target.data(metadata.date);
+              if (date) {
+                module.set.focusDate(date, false, true, true);
+              }
+            },
+            mouseup: function (event) {
               //ensure input has focus so that it receives keydown events for calendar navigation
               module.focus();
               event.preventDefault();
               event.stopPropagation();
+              isTouchDown = false;
               var target = $(event.target);
               var parent = target.parent();
               if (parent.data(metadata.date) || parent.data(metadata.focusDate) || parent.data(metadata.mode)) {
@@ -2976,33 +3000,13 @@ $.extend( $.easing, {
               var mode = target.data(metadata.mode);
               if (date) {
                 var forceSet = target.hasClass(className.today);
-                module.set.selectDate(date, forceSet);
+                module.selectDate(date, forceSet);
               }
               else if (focusDate) {
                 module.set.focusDate(focusDate);
               }
               else if (mode) {
                 module.set.mode(mode);
-              }
-            },
-            mousedown: function (event) {
-              if ($input.length) {
-                //prevent the mousedown on the calendar causing the input to lose focus
-                event.preventDefault();
-              }
-              var target = $(event.target);
-              var date = target.data(metadata.date);
-              if (date) {
-                module.set.focusDate(date, false);
-                module.update.focus(true);
-              }
-            },
-            mouseover: function (event) {
-              var target = $(event.target);
-              var date = target.data(metadata.date);
-              if (date) {
-                module.set.focusDate(date, false);
-                module.update.focus();
               }
             },
             keydown: function (event) {
@@ -3035,7 +3039,7 @@ $.extend( $.easing, {
                   //enter
                   var date = module.get.focusDate();
                   if (date) {
-                    module.set.selectDate(date);
+                    module.selectDate(date);
                   }
                 }
               }
@@ -3052,16 +3056,15 @@ $.extend( $.easing, {
               module.set.date(date, false);
             },
             inputFocus: function () {
-              module.popup('show');
               $container.addClass(className.active);
             },
             inputBlur: function () {
+              $container.removeClass(className.active);
               if (settings.formatInput) {
                 var date = module.get.date();
                 var text = formatter.datetime(date, settings);
                 $input.val(text);
               }
-              $container.removeClass(className.active);
             }
           },
 
@@ -3134,36 +3137,6 @@ $.extend( $.easing, {
           },
 
           set: {
-            selectDate: function (date, forceSet) {
-              var mode = module.get.mode();
-              var complete = forceSet || mode === 'minute' ||
-                (settings.disableMinute && mode === 'hour') ||
-                (settings.type === 'date' && mode === 'day') ||
-                (settings.type === 'month' && mode === 'month') ||
-                (settings.type === 'year' && mode === 'year');
-              if (complete) {
-                var canceled = module.set.date(date) === false;
-                if (!canceled && settings.closable) {
-                  module.popup('hide');
-                  //if this is a range calendar, show the end date calendar popup and focus the input
-                  var endModule = module.get.calendarModule(settings.endCalendar);
-                  if (endModule) {
-                    endModule.popup('show');
-                    endModule.focus();
-                  }
-                }
-              } else {
-                var newMode = mode === 'year' ? (!settings.disableMonth ? 'month' : 'day') :
-                  mode === 'month' ? 'day' : mode === 'day' ? 'hour' : 'minute';
-                module.set.mode(newMode);
-                if (mode === 'hour' || (mode === 'day' && module.get.date())) {
-                  //the user has chosen enough to consider a valid date/time has been chosen
-                  module.set.date(date);
-                } else {
-                  module.set.focusDate(date);
-                }
-              }
-            },
             date: function (date, updateInput, fireChange) {
               updateInput = updateInput !== false;
               fireChange = fireChange !== false;
@@ -3203,10 +3176,15 @@ $.extend( $.easing, {
               }
               module.set.dataKeyValue(metadata.endDate, date, refreshCalendar);
             },
-            focusDate: function (date, refreshCalendar) {
+            focusDate: function (date, refreshCalendar, updateFocus, updateRange) {
               date = module.helper.sanitiseDate(date);
               date = module.helper.dateInRange(date);
-              module.set.dataKeyValue(metadata.focusDate, date, refreshCalendar);
+              var changed = module.set.dataKeyValue(metadata.focusDate, date, refreshCalendar);
+              updateFocus = (updateFocus !== false && changed && refreshCalendar === false) || focusDateUsedForRange != updateRange;
+              focusDateUsedForRange = updateRange;
+              if (updateFocus) {
+                module.update.focus(updateRange);
+              }
             },
             mode: function (mode, refreshCalendar) {
               module.set.dataKeyValue(metadata.mode, mode, refreshCalendar);
@@ -3219,9 +3197,41 @@ $.extend( $.easing, {
               } else {
                 $module.removeData(key);
               }
-              refreshCalendar = refreshCalendar === true || (refreshCalendar !== false && !equal);
+              refreshCalendar = refreshCalendar !== false && !equal;
               if (refreshCalendar) {
                 module.create.calendar();
+              }
+              return !equal;
+            }
+          },
+
+          selectDate: function (date, forceSet) {
+            var mode = module.get.mode();
+            var complete = forceSet || mode === 'minute' ||
+              (settings.disableMinute && mode === 'hour') ||
+              (settings.type === 'date' && mode === 'day') ||
+              (settings.type === 'month' && mode === 'month') ||
+              (settings.type === 'year' && mode === 'year');
+            if (complete) {
+              var canceled = module.set.date(date) === false;
+              if (!canceled && settings.closable) {
+                module.popup('hide');
+                //if this is a range calendar, show the end date calendar popup and focus the input
+                var endModule = module.get.calendarModule(settings.endCalendar);
+                if (endModule) {
+                  endModule.popup('show');
+                  endModule.focus();
+                }
+              }
+            } else {
+              var newMode = mode === 'year' ? (!settings.disableMonth ? 'month' : 'day') :
+                mode === 'month' ? 'day' : mode === 'day' ? 'hour' : 'minute';
+              module.set.mode(newMode);
+              if (mode === 'hour' || (mode === 'day' && module.get.date())) {
+                //the user has chosen enough to consider a valid date/time has been chosen
+                module.set.date(date);
+              } else {
+                module.set.focusDate(date);
               }
             }
           },
@@ -3514,7 +3524,7 @@ $.extend( $.easing, {
     monthFirst: true,     // month before day when parsing/converting date from/to text
     touchReadonly: true,  // set input to readonly on touch devices
     inline: false,        // create the calendar inline instead of inside a popup
-    on: 'click',          // when to show the popup
+    on: null,             // when to show the popup (defaults to 'focus' for input, 'click' for others)
     initialDate: null,    // date to display initially when no date is selected (null = now)
     startMode: false,     // display mode to start in, can be 'year', 'month', 'day', 'hour', 'minute' (false = 'day')
     minDate: null,        // minimum date/time that can be selected, dates/times before are disabled
