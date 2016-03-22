@@ -1,5 +1,5 @@
  /*
- * # Semantic UI - 2.1.7
+ * # Semantic UI - 2.1.8
  * https://github.com/Semantic-Org/Semantic-UI
  * http://www.semantic-ui.com/
  *
@@ -9,7 +9,7 @@
  *
  */
 /*!
- * # Semantic UI 2.1.7 - Site
+ * # Semantic UI 2.1.8 - Site
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -497,7 +497,7 @@ $.extend($.expr[ ":" ], {
 })( jQuery, window, document );
 
 /*!
- * # Semantic UI 2.1.7 - Form Validation
+ * # Semantic UI 2.1.8 - Form Validation
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -2015,7 +2015,7 @@ $.fn.form.settings = {
 })( jQuery, window, document );
 
 /*!
- * # Semantic UI 2.1.7 - Accordion
+ * # Semantic UI 2.1.8 - Accordion
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -2612,7 +2612,7 @@ $.extend( $.easing, {
 
 
 /*!
- * # Semantic UI 2.1.7 - Checkbox
+ * # Semantic UI 2.1.8 - Checkbox
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -2800,7 +2800,11 @@ $.fn.checkbox = function(parameters) {
               keyCode = {
                 enter  : 13,
                 space  : 32,
-                escape : 27
+                escape : 27,
+                left   : 37,
+                up     : 38,
+                right  : 39,
+                down   : 40
               }
             ;
             if(key == keyCode.escape) {
@@ -2811,6 +2815,18 @@ $.fn.checkbox = function(parameters) {
             else if(!event.ctrlKey && ( key == keyCode.space || key == keyCode.enter) ) {
               module.verbose('Enter/space key pressed, toggling checkbox');
               module.toggle();
+              shortcutPressed = true;
+            }
+            else if(module.is.radio() && ( key == keyCode.left || key == keyCode.up || key == keyCode.right || key == keyCode.down) ) {
+              var delta = key == keyCode.left || key == keyCode.up ? -1 : 1;
+              var radios = module.get.radios();
+              if(radios.length > 1) {
+                var checkIndex = (radios.index($module) + delta + radios.length) % radios.length;
+                var checkModule = $(radios[checkIndex]).data(moduleNamespace);
+                if(checkModule) {
+                  checkModule.check();
+                }
+              }
               shortcutPressed = true;
             }
             else {
@@ -3422,7 +3438,7 @@ $.fn.checkbox.settings = {
 })( jQuery, window, document );
 
 /*!
- * # Semantic UI 2.1.7 - Dimmer
+ * # Semantic UI 2.1.8 - Dimmer
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -4115,7 +4131,7 @@ $.fn.dimmer.settings = {
 
 })( jQuery, window, document );
 /*!
- * # Semantic UI 2.1.7 - Dropdown
+ * # Semantic UI 2.1.8 - Dropdown
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -7558,7 +7574,7 @@ $.fn.dropdown.settings.templates = {
 })( jQuery, window, document );
 
 /*!
- * # Semantic UI 2.1.7 - Video
+ * # Semantic UI 2.1.8 - Video
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -8218,7 +8234,7 @@ $.fn.embed.settings = {
 })( jQuery, window, document );
 
 /*!
- * # Semantic UI 2.1.7 - Modal
+ * # Semantic UI 2.1.8 - Modal
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -8461,15 +8477,20 @@ $.fn.modal = function(parameters) {
               isInDOM   = $.contains(document.documentElement, event.target)
             ;
             if(!isInModal && isInDOM) {
-              module.debug('Dimmer clicked, hiding all modals');
-              if( module.is.active() ) {
-                module.remove.clickaway();
-                if(settings.allowMultiple) {
-                  module.hide();
+              if(settings.closable) {
+                module.debug('Dimmer clicked, hiding all modals');
+                if( module.is.active() ) {
+                  module.remove.clickaway();
+                  if(settings.allowMultiple) {
+                    module.hide();
+                  }
+                  else {
+                    module.hideAll();
+                  }
                 }
-                else {
-                  module.hideAll();
-                }
+              }
+              else {
+                module.debug('Dimmer clicked, but closable is set to false');
               }
             }
           },
@@ -8713,11 +8734,9 @@ $.fn.modal = function(parameters) {
             $module.removeClass(className.active);
           },
           clickaway: function() {
-            if(settings.closable) {
-              $dimmer
-                .off('click' + elementNamespace)
-              ;
-            }
+            $dimmer
+              .off('click' + elementNamespace)
+            ;
           },
           bodyStyle: function() {
             if($body.attr('style') === '') {
@@ -8798,11 +8817,9 @@ $.fn.modal = function(parameters) {
             }
           },
           clickaway: function() {
-            if(settings.closable) {
-              $dimmer
-                .on('click' + elementNamespace, module.event.click)
-              ;
-            }
+            $dimmer
+              .on('click' + elementNamespace, module.event.click)
+            ;
           },
           screenHeight: function() {
             if( module.can.fit() ) {
@@ -9111,7 +9128,7 @@ $.fn.modal.settings = {
 })( jQuery, window, document );
 
 /*!
- * # Semantic UI 2.1.7 - Nag
+ * # Semantic UI 2.1.8 - Nag
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -9598,7 +9615,7 @@ $.fn.nag.settings = {
 })( jQuery, window, document );
 
 /*!
- * # Semantic UI 2.1.7 - Popup
+ * # Semantic UI 2.1.8 - Popup
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -11012,7 +11029,7 @@ $.fn.popup.settings = {
 })( jQuery, window, document );
 
 /*!
- * # Semantic UI 2.1.7 - Progress
+ * # Semantic UI 2.1.8 - Progress
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -11807,7 +11824,7 @@ $.fn.progress.settings = {
 
 })( jQuery, window, document );
 /*!
- * # Semantic UI 2.1.7 - Rating
+ * # Semantic UI 2.1.8 - Rating
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -12283,7 +12300,7 @@ $.fn.rating.settings = {
 })( jQuery, window, document );
 
 /*!
- * # Semantic UI 2.1.7 - Search
+ * # Semantic UI 2.1.8 - Search
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -13629,7 +13646,7 @@ $.fn.search.settings = {
 })( jQuery, window, document );
 
 /*!
- * # Semantic UI 2.1.7 - Shape
+ * # Semantic UI 2.1.8 - Shape
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -14505,7 +14522,7 @@ $.fn.shape.settings = {
 
 })( jQuery, window, document );
 /*!
- * # Semantic UI 2.1.7 - Sidebar
+ * # Semantic UI 2.1.8 - Sidebar
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -15528,7 +15545,7 @@ $.fn.sidebar.settings = {
 })( jQuery, window, document );
 
 /*!
- * # Semantic UI 2.1.7 - Sticky
+ * # Semantic UI 2.1.8 - Sticky
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -16435,7 +16452,7 @@ $.fn.sticky.settings = {
 
 })( jQuery, window, document );
 /*!
- * # Semantic UI 2.1.7 - Tab
+ * # Semantic UI 2.1.8 - Tab
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -17334,7 +17351,7 @@ $.fn.tab.settings = {
 })( jQuery, window, document );
 
 /*!
- * # Semantic UI 2.1.7 - Transition
+ * # Semantic UI 2.1.8 - Transition
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -18409,7 +18426,7 @@ $.fn.transition.settings = {
 })( jQuery, window, document );
 
 /*!
- * # Semantic UI 2.1.7 - API
+ * # Semantic UI 2.1.8 - API
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -19552,7 +19569,7 @@ $.api.settings = {
 })( jQuery, window, document );
 
 /*!
- * # Semantic UI 2.1.7 - State
+ * # Semantic UI 2.1.8 - State
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -20248,7 +20265,7 @@ $.fn.state.settings = {
 })( jQuery, window, document );
 
 /*!
- * # Semantic UI 2.1.7 - Visibility
+ * # Semantic UI 2.1.8 - Visibility
  * http://github.com/semantic-org/semantic-ui/
  *
  *
