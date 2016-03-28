@@ -1,5 +1,5 @@
 /*!
- * # Semantic UI 2.1.7 - Dropdown
+ * # Semantic UI 2.1.8 - Dropdown
  * http://github.com/semantic-org/semantic-ui/
  *
  *
@@ -382,10 +382,6 @@ $.fn.dropdown = function(parameters) {
 
         refreshData: function() {
           module.verbose('Refreshing cached metadata');
-          $item
-            .removeData(metadata.text)
-            .removeData(metadata.value)
-          ;
           $module
             .removeData(metadata.defaultText)
             .removeData(metadata.defaultValue)
