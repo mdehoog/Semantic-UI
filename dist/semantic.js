@@ -3273,7 +3273,7 @@ $.extend( $.easing, {
                 return undefined;
               }
               if (!(date instanceof Date)) {
-                date = parser.date('' + date);
+                date = parser.date('' + date, settings);
               }
               if (isNaN(date.getTime())) {
                 return undefined;
