@@ -134,14 +134,22 @@
   box-shadow: @rangeInvertedBoxShadow;
 }
 
+.ui.calendar .calendar:focus .ui.table tbody tr.focus,
+.ui.calendar .calendar.active .ui.table tbody tr.focus,
 .ui.calendar .calendar:focus .ui.table tbody tr td.focus,
 .ui.calendar .calendar.active .ui.table tbody tr td.focus {
   box-shadow: @focusBoxShadow;
+  /* TODO For some reason the tr does not get the default :focus outline, so I enforced it here temporarily, help? */
+  outline: rgb(77, 144, 254) auto 5px;
 }
 
+.ui.calendar .calendar:focus .ui.table.inverted tbody tr.focus,
+.ui.calendar .calendar.active .ui.table.inverted tbody tr.focus,
 .ui.calendar .calendar:focus .ui.table.inverted tbody tr td.focus,
 .ui.calendar .calendar.active .ui.table.inverted tbody tr td.focus {
   box-shadow: @focusInvertedBoxShadow;
+  /* TODO For some reason the tr does not get the default :focus outline, so I enforced it here temporarily, help? */
+  outline: rgb(77, 144, 254) auto 5px;
 }
 
 .loadUIOverrides();
