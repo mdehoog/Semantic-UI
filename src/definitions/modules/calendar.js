@@ -549,7 +549,7 @@
               fireChange = fireChange !== false;
               date = module.helper.sanitiseDate(date);
               date = module.helper.dateInRange(date);
-              if (settings.type === 'week')
+              if (date && settings.type === 'week')
                 date = module.helper.getFirstDayOfWeek(date);
 
               var text = formatter.datetime(date, settings);
