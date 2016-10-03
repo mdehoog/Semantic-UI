@@ -3308,7 +3308,7 @@ $.extend( $.easing, {
             isDateInRange: function (date, mode, minDate, maxDate) {
               if (!minDate && !maxDate) {
                 var startDate = module.get.startDate();
-                minDate = startDate && settings.minDate ? Math.max(startDate, settings.minDate) : startDate || settings.minDate;
+                minDate = startDate && settings.minDate ? new Date(Math.max(startDate, settings.minDate)) : startDate || settings.minDate;
                 maxDate = settings.maxDate;
               }
               return !(!date ||
@@ -3318,7 +3318,7 @@ $.extend( $.easing, {
             dateInRange: function (date, minDate, maxDate) {
               if (!minDate && !maxDate) {
                 var startDate = module.get.startDate();
-                minDate = startDate && settings.minDate ? Math.max(startDate, settings.minDate) : startDate || settings.minDate;
+                minDate = startDate && settings.minDate ? new Date(Math.max(startDate, settings.minDate)) : startDate || settings.minDate;
                 maxDate = settings.maxDate;
               }
               var isTimeOnly = settings.type === 'time';
