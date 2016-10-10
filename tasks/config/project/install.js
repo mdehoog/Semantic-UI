@@ -31,7 +31,7 @@ var when = {
 
   // install
   hasConfig: function() {
-    return requireDotFile('semantic.json');
+    return requireDotFile('semantic.json', process.cwd());
   },
 
   allowOverwrite: function(questions) {
@@ -80,6 +80,14 @@ module.exports = {
   // check whether install is setup
   isSetup: function() {
     return when.hasConfig();
+  },
+
+  // detect whether there is a semantic.json configuration and that the auto-install option is set to true
+  shouldAutoInstall: function() {
+    var
+      config = when.hasConfig()
+    ;
+    return config['autoInstall'];
   },
 
   // checks if files are in a PM directory
@@ -406,7 +414,7 @@ module.exports = {
       },
       {
         type: 'list',
-        name: 'changePermisions',
+        name: 'changePermissions',
         when: when.notAuto,
         message: 'Should we set permissions on outputted files?',
         choices: [
@@ -417,7 +425,7 @@ module.exports = {
           {
             name: 'Yes',
             value: true
-          },
+          }
         ]
       },
       {
@@ -731,7 +739,7 @@ module.exports = {
 
     /* Rename Files */
     rename: {
-      json : { extname : '.json' },
+      json : { extname : '.json' }
     },
 
     /* Copy Install Folders */
@@ -753,5 +761,4 @@ module.exports = {
 
     }
   }
-
 };
