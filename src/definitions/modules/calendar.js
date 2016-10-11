@@ -272,6 +272,7 @@
                   cell.data(metadata.date, cellDate);
                   var disabled = (isDay && cellDate.getMonth() !== month) || !module.helper.isDateInRange(cellDate, mode);
                   var active = module.helper.dateEqual(cellDate, date, mode);
+                  active = active || isDay && settings.type === 'week' && module.helper.weekDiff(cellDate, date) === 0;
                   cell.toggleClass(className.disabledCell, disabled);
                   cell.toggleClass(className.activeCell, active);
                   if (!isHour && !isMinute) {
@@ -308,6 +309,7 @@
               var startDate = module.get.startDate();
               var endDate = module.get.endDate();
               var rangeDate = (updateRange ? focusDate : null) || date || (!isTouch ? focusDate : null);
+              var isWeek = settings.type === 'week';
 
               container.find('td').each(function () {
                 var cell = $(this);
@@ -321,9 +323,22 @@
                 var inRange = !rangeDate ? false :
                   ((!!startDate && module.helper.isDateInRange(cellDate, mode, startDate, rangeDate)) ||
                   (!!endDate && module.helper.isDateInRange(cellDate, mode, rangeDate, endDate)));
-                cell.toggleClass(className.focusCell, focused && (!isTouch || isTouchDown));
+                cell.toggleClass(className.focusCell, !isWeek && focused && (!isTouch || isTouchDown));
                 cell.toggleClass(className.rangeCell, inRange && !active && !disabled);
               });
+
+              if (isWeek) {
+                container.find('tr').each(function(){
+                  var row = $(this);
+                  var cell = row.find('td').first();
+                  var cellDate = cell.data(metadata.date);
+                  if (!cellDate) {
+                    return;
+                  }
+                  var isSameWeek = module.helper.weekDiff(cellDate, focusDate) === 0;
+                  row.toggleClass(className.focusCell, isSameWeek && (!isTouch || isTouchDown));
+                });
+              }
             }
           },
 
@@ -503,7 +518,7 @@
                 if (!(settings.disableMonth || settings.type === 'year') || settings.type === 'month') {
                   validModes.push('month');
                 }
-                if (settings.type.indexOf('date') >= 0) {
+                if (settings.type === 'week' || settings.type.indexOf('date') >= 0) {
                   validModes.push('day');
                 }
               }
@@ -542,6 +557,8 @@
               fireChange = fireChange !== false;
               date = module.helper.sanitiseDate(date);
               date = module.helper.dateInRange(date);
+              if (date && settings.type === 'week')
+                date = module.helper.getFirstDayOfWeek(date);
 
               var text = formatter.datetime(date, settings);
               if (fireChange && settings.onChange.call(element, date, text) === false) {
@@ -610,6 +627,7 @@
             var complete = forceSet || mode === 'minute' ||
               (settings.disableMinute && mode === 'hour') ||
               (settings.type === 'date' && mode === 'day') ||
+              (settings.type === 'week' && mode === 'day') ||
               (settings.type === 'month' && mode === 'month') ||
               (settings.type === 'year' && mode === 'year');
             if (complete) {
@@ -730,6 +748,28 @@
             mergeDateTime: function (date, time) {
               return (!date || !time) ? time :
                 new Date(date.getFullYear(), date.getMonth(), date.getDate(), time.getHours(), time.getMinutes());
+            },
+            getFirstDayOfWeek: function(date) {
+              var d = new Date(+date);
+              if (settings.firstDayOfWeek === 0)
+                d.setDate(d.getDate() - d.getDay());
+              else if (settings.firstDayOfWeek === 1)
+                d.setDate(d.getDate() - (d.getDay() || 7) + settings.firstDayOfWeek);
+              return d;
+            },
+            getWeek: function(date) {
+              // See http://stackoverflow.com/a/6117889
+              var d = new Date(+date);
+              d.setHours(0, 0, 0, 0);
+              // TODO Only supports firstDayOfWeek = Monday or Sunday
+              d.setDate(d.getDate() + 4 - (d.getDay() || (settings.firstDayOfWeek === 1 ? 7 : 0)));
+              return [d.getFullYear(), Math.ceil((((d - new Date(d.getFullYear(), 0, 1)) / 8.64e7) + 1) / 7)];
+            },
+            weekDiff: function(date1, date2) {
+              var d1 = module.helper.getWeek(date1);
+              var d2 = module.helper.getWeek(date2);
+              // Approximate diff, but we only really care about if it's 0 and the sign if it isn't
+              return (d2[0] * 52 + d2[1]) - (d1[0] * 52 + d1[1]);
             }
           },
 
