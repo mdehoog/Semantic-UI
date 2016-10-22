@@ -55,6 +55,7 @@
 
           $module = $(this),
           $input = $module.find(selector.input),
+          $hiddenInput = null,
           $container = $module.find(selector.popup),
           $activator = $module.find(selector.activator),
 
@@ -160,6 +161,20 @@
             input: function () {
               if (settings.touchReadonly && $input.length && isTouch) {
                 $input.prop('readonly', true);
+              }
+
+              if (settings.hiddenInput) {
+                // We clone the input and change its id and name to avoid collision
+                // now input is just for display purposes
+                // and we store actual date in $hiddenInput
+                $input.after(function() {
+                  $hiddenInput = $(this).clone();
+                  $hiddenInput.attr('hidden', true);
+                  return $hiddenInput;
+                })
+                  .attr('id', module.helper.guid())
+                  .attr('name', module.helper.guid())
+                ;
               }
             },
             date: function () {
@@ -558,6 +573,11 @@
 
               if (updateInput && $input.length) {
                 $input.val(text);
+                if($hiddenInput && $hiddenInput.length && date) {
+                  $hiddenInput.val(
+                    formatter.hiddenInputDate(date, settings)
+                  );
+                }
               }
             },
             startDate: function (date, refreshCalendar) {
@@ -730,6 +750,15 @@
             mergeDateTime: function (date, time) {
               return (!date || !time) ? time :
                 new Date(date.getFullYear(), date.getMonth(), date.getDate(), time.getHours(), time.getMinutes());
+            },
+            guid: function () {
+              function s4() {
+                return Math.floor((1 + Math.random()) * 0x10000)
+                    .toString(16)
+                    .substring(1);
+              }
+              return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+                  s4() + '-' + s4() + s4() + s4();
             }
           },
 
@@ -949,6 +978,7 @@
     formatInput: true,    // format the input text upon input blur and module creation
     startCalendar: null,  // jquery object or selector for another calendar that represents the start date of a date range
     endCalendar: null,    // jquery object or selector for another calendar that represents the end date of a date range
+    hiddenInput: false,   // if true hidden input is created and from now on it keeps track of date changes storing it formatted as setting.formatter.hiddenInputDate
 
     // popup options ('popup', 'on', 'hoverable', and show/hide callbacks are overridden)
     popupOptions: {
@@ -1032,6 +1062,10 @@
       },
       today: function (settings) {
         return settings.type === 'date' ? settings.text.today : settings.text.now;
+      },
+      hiddenInputDate: function(date, settings) {
+        //by default it returns date in followig format: Wed Jan 13 2016 13:50:00 GMT+0100 (CET)
+        return date;
       }
     },
 
