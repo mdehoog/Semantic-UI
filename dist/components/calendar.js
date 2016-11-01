@@ -164,7 +164,7 @@
             },
             date: function () {
               if ($input.length) {
-                var val = $input.val();
+                var val = settings.displayValue ? settings.displayValue :$input.val();
                 var date = parser.date(val, settings);
                 module.set.date(date, settings.formatInput, false);
               }
@@ -939,6 +939,7 @@
     inline: false,        // create the calendar inline instead of inside a popup
     on: null,             // when to show the popup (defaults to 'focus' for input, 'click' for others)
     initialDate: null,    // date to display initially when no date is selected (null = now)
+    displayValue: null,   // date to display in input (formatted with formatter)
     startMode: false,     // display mode to start in, can be 'year', 'month', 'day', 'hour', 'minute' (false = 'day')
     minDate: null,        // minimum date/time that can be selected, dates/times before are disabled
     maxDate: null,        // maximum date/time that can be selected, dates/times after are disabled
